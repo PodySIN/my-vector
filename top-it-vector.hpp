@@ -12,7 +12,8 @@ namespace topit {
       Vector(Vector&&);
       Vector& operator=(const Vector&);
       Vector& operator=(Vector&&);
-      T operator[](size_t index) const noexcept;
+      T& operator[](size_t index) noexcept;
+      const T& operator[](size_t index) const noexcept;
       
       bool isEmpty() const noexcept;
       size_t getSize() const noexcept;
@@ -23,6 +24,8 @@ namespace topit {
       void popBack();
       void insert(size_t pos, const T* v);
       void erase(size_t pos);
+      T& at(size_t index);
+      const T& at(size_t index) const;
     private:
       T* data_;
       size_t size_, capacity_;
@@ -93,8 +96,32 @@ void topit::Vector< T >::popBack()
 }
 
 template< class T >
-T topit::Vector< T >::operator[](size_t index) const noexcept
+T& topit::Vector< T >::operator[](size_t index) noexcept
 {
+  return data_[index];
+}
+
+template< class T >
+const T& topit::Vector< T >::operator[](size_t index) const noexcept
+{
+  return data_[index];
+}
+
+template< class T >
+T& topit::Vector< T >::at(size_t index)
+{
+  if (index >= size_) {
+    throw std::out_of_range("Index too big");
+  }
+  return data_[index];
+}
+
+template< class T >
+const T& topit::Vector< T >::at(size_t index) const
+{
+  if (index >= size_) {
+    throw std::out_of_range("Index too big");
+  }
   return data_[index];
 }
 
