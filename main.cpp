@@ -8,11 +8,21 @@ bool testEmptyVector()
   return v.isEmpty();
 }
 
+bool testPushBack()
+{
+  topit::Vector< int > v;
+  v.pushBack(5);
+  v.pushBack(8);
+  v.pushBack(11);
+  return v[0] == 5 && v[1] == 8 && v[2] == 11;
+}
+
 int main()
 {
   using test_t = std::pair< const char*, bool(*)() >;
   test_t tests[] = {
-    { "Empty vector", testEmptyVector }
+    { "Empty vector", testEmptyVector },
+    { "Push back element", testPushBack }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;

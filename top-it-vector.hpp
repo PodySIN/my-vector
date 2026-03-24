@@ -12,6 +12,7 @@ namespace topit {
       Vector(Vector&&);
       Vector& operator=(const Vector&);
       Vector& operator=(Vector&&);
+      T operator[](size_t index) const noexcept;
       
       bool isEmpty() const noexcept;
       size_t getSize() const noexcept;
@@ -89,6 +90,12 @@ void topit::Vector< T >::popBack()
     size_--;
     data_[size_].~T();
   }
+}
+
+template< class T >
+T topit::Vector< T >::operator[](size_t index) const noexcept
+{
+  return data_[index];
 }
 
 #endif
