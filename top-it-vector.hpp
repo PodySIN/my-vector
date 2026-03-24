@@ -59,6 +59,7 @@ size_t topit::Vector< T >::getCapacity() const noexcept
   return capacity_;
 }
 
+template< class T >
 void topit::Vector< T >::reallocate(size_t capacity)
 {
   T* data = new T[capacity];
@@ -70,16 +71,18 @@ void topit::Vector< T >::reallocate(size_t capacity)
   capacity_ = capacity;
 }
 
+template< class T >
 void topit::Vector< T >::pushBack(const T& v)
 {
   if (size_ >= capacity_) {
     size_t new_capacity = capacity_ == 0 ? 1 : capacity_ * 2;
     reallocate(new_capacity);
   }
-  data_[size_] = std::move(value);
+  data_[size_] = std::move(v);
   ++size_;
 }
 
+template< class T >
 void topit::Vector< T >::popBack()
 {
   if(size_ > 0) {
