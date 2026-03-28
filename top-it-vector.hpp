@@ -8,11 +8,12 @@ namespace topit {
     public:
       ~Vector();
       Vector();
-      Vector(const Vector&);
+      Vector(const Vector< T >&);
       Vector(size_t size, const T& init);
-      Vector(Vector&&) noexcept;
-      Vector& operator=(const Vector&);
-      Vector& operator=(Vector&&);
+      Vector(size_t size, const T* arr);
+      Vector(Vector< T >&&) noexcept;
+      Vector< T >& operator=(const Vector< T >&);
+      Vector< T >& operator=(Vector< T >&&);
 
       T& operator[](size_t index) noexcept;
       const T& operator[](size_t index) const noexcept;
@@ -45,6 +46,20 @@ topit::Vector< T >::Vector(size_t size):
   size_(size),
   capacity_(size)
 {}
+
+template< class T >
+topit::Vector< T >::Vector(size_t size, const T* arr):
+  Vector(size)
+{
+  for (size_t i = 0; i < size; i++) {
+    try {
+      data_[i] = arr[i];
+    } catch (...) {
+      delete[] data_;
+      throw;
+    }
+  }
+}
 
 template< class T >
 topit::Vector< T >::Vector(size_t size, const T& init):

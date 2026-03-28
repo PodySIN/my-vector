@@ -126,7 +126,7 @@ bool testCopyConstructorForNonEmpty()
 bool testMoveConstructorForEmpty()
 {
   topit::Vector< int > v;
-  topit::Vector< int > yav{std::move(v)};
+  topit::Vector< int > yav = std::move(v);
   return v == yav;
 }
 
@@ -135,7 +135,7 @@ bool testMoveConstructorForNonEmpty()
   topit::Vector< int > v;
   v.pushBack(1);
   v.pushBack(2);
-  topit::Vector< int > yav{std::move(v)};
+  topit::Vector< int > yav = topit::Vector< int >{1, 2};
   return v == yav;
 }
 
