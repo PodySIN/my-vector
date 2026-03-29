@@ -135,8 +135,44 @@ bool testMoveConstructorForNonEmpty()
   topit::Vector< int > v;
   v.pushBack(1);
   v.pushBack(2);
-  topit::Vector< int > yav = topit::Vector< int >{1, 2};
-  return v == yav;
+  topit::Vector< int > yav = std::move(v);
+  return yav[0] == 1 && yav[1] == 2 && yav.getSize() == 2;
+}
+
+bool testCopyOperatorForEmpty()
+{
+  topit::Vector< int > v1;
+  topit::Vector< int > v2;
+  v2 = v1;
+  return v1 == v2;
+}
+
+bool testCopyOperatorForNonEmpty()
+{
+  topit::Vector< int > v1;
+  topit::Vector< int > v2;
+  v1.pushBack(1);
+  v1.pushBack(2);
+  v2 = v1;
+  return v1 == v2 && v1[1] == 2 && v2[1] == 2;
+}
+
+bool testMoveOperatorForEmpty()
+{
+  topit::Vector< int > v1;
+  topit::Vector< int > v2;
+  v2 = std::move(v1);
+  return v1 == v2;
+}
+
+bool testMoveOperatorForNonEmpty()
+{
+  topit::Vector< int > v1;
+  topit::Vector< int > v2;
+  v1.pushBack(1);
+  v1.pushBack(2);
+  v2 = std::move(v1);
+  return v2[0] == 1 && v2[1] == 2;
 }
 
 int main()
@@ -155,7 +191,11 @@ int main()
     { "Test copy constructor for empty", testCopyConstructorForEmpty },
     { "Test copy constructor for non empty", testCopyConstructorForNonEmpty },
     { "Test move constructor for empty", testMoveConstructorForEmpty },
-    { "Test move constructor for non empty", testMoveConstructorForNonEmpty }
+    { "Test move constructor for non empty", testMoveConstructorForNonEmpty },
+    { "Test copy operator for empty", testCopyOperatorForEmpty },
+    { "Test copy operator for not empty", testCopyOperatorForNonEmpty },
+    { "Test move operator for empty", testMoveOperatorForEmpty },
+    { "Test move operator for non empty", testMoveOperatorForNonEmpty }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
