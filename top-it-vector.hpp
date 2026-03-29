@@ -17,7 +17,12 @@ namespace topit {
 
       T& operator[](size_t index) noexcept;
       const T& operator[](size_t index) const noexcept;
-
+      
+      Iterator< T > begin() const;
+      CIterator< T > cbegin() const;
+      Iterator< T > end() const;
+      CIterator< T > cend() const;
+      
       bool isEmpty() const noexcept;
       size_t getSize() const noexcept;
       size_t getCapacity() const noexcept;
@@ -37,7 +42,90 @@ namespace topit {
   };
 
   template< class T >
+  class Iterator {
+    public:
+      ~Iterator();
+      Iterator();
+      Iterator(const Iterator< T >&);
+      Iterator(Iterator< T >&&) noexcept;
+      Iterator< T >& operator=(const Iterator< T >&);
+      Iterator< T >& operator=(Iterator< T >&&) noexcept;
+
+      T& operator*() const;
+      T* operator->() const;
+      T& operator[](std::ptrdiff_t n) const;
+      Iterator< T >& operator++(int);
+      Iterator< T >& operator++();
+      Iterator< T >& operator--(int);
+      Iterator< T >& operator--();
+      Iterator< T >& operator+(std::ptrdiff_t n);
+      Iterator< T >& operator-(std::ptrdiff_t n);
+    private:
+      T* ptr_;
+  }
+
+  template< class T >
   bool operator==(const Vector< T >& lhs, const Vector< T >& rhs);
+}
+
+template< class T >
+topit::Iterator< T >::Iterator():
+  ptr_(nullptr)
+{}
+
+template< class T >
+topit::Iterator< T >::Iterator(const Iterator< T >& it):
+  ptr_(it.ptr_)
+{}
+
+template< class T >
+topit::Iterator< T >::Iterator(Iterator< T >&& it) noexcept:
+  ptr_(it.ptr_)
+{
+  it.ptr_ = nullptr;
+}
+
+template< class T >
+Iterator< T >& operator=(const Iterator< T >& it)
+{
+  if (this != &it) {
+    ptr_ = it.ptr_;
+  }
+  return *this;
+}
+
+template< class T >
+Iterator< T >& operator=(Iterator< T >&& it) noexcept
+{
+  if (this != &it) {
+    ptr_ = it.ptr_;
+    it.ptr_ = nullptr;
+  }
+  return *this;
+}
+
+template< class T >
+topit::Iterator< T > topit::Vector< T >::begin() const
+{
+  return Iterator< T >{data_};
+}
+
+template< class T >
+topit::Iterator< T > topit::Vector< T >::end() const
+{
+  return Iterator< T >{data_ + size};
+}
+
+template< class T >
+topit::CIterator< T > topit::Vector< T >::cbegin() const
+{
+  return CIterator< T >{data_};
+}
+
+template< class T >
+topit::CIterator< T > topit::Vector< T >::cend() const
+{
+  return CIterator< T >{data_ + size};
 }
 
 template< class T >
