@@ -8,7 +8,6 @@ namespace topit {
   template< class T >
   class Iterator {
   public:
-    ~Iterator();
     Iterator();
     Iterator(const Iterator< T >&);
     Iterator(Iterator< T >&&) noexcept;
@@ -22,8 +21,8 @@ namespace topit {
     Iterator< T >& operator++();
     Iterator< T >& operator--(int);
     Iterator< T >& operator--();
-    Iterator< T >& operator+(std::ptrdiff_t n);
-    Iterator< T >& operator-(std::ptrdiff_t n);
+    Iterator< T > operator+(std::ptrdiff_t n);
+    Iterator< T > operator-(std::ptrdiff_t n);
     std::ptrdiff_t operator-(const Iterator< T >&) const;
 
     bool operator==(const Iterator< T >&) const noexcept;
@@ -40,7 +39,6 @@ namespace topit {
   template< class T >
   class CIterator {
   public:
-    ~CIterator();
     CIterator();
     CIterator(const CIterator< T >&);
     CIterator(CIterator< T >&&) noexcept;
@@ -54,8 +52,8 @@ namespace topit {
     CIterator< T >& operator++();
     CIterator< T >& operator--(int);
     CIterator< T >& operator--();
-    CIterator< T >& operator+(std::ptrdiff_t n);
-    CIterator< T >& operator-(std::ptrdiff_t n);
+    CIterator< T > operator+(std::ptrdiff_t n);
+    CIterator< T > operator-(std::ptrdiff_t n);
     std::ptrdiff_t operator-(const CIterator< T >&) const;
 
     bool operator==(const CIterator< T >&) const noexcept;
@@ -93,7 +91,6 @@ namespace topit {
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
 
-    void reallocate(size_t capacity);
     void swap(Vector< T >& rhs) noexcept;
     void pushBack(const T& v);
     void popBack();
@@ -102,6 +99,7 @@ namespace topit {
     T& at(size_t index);
     const T& at(size_t index) const;
   private:
+    void reallocate(size_t capacity);
     explicit Vector(size_t size);
     T* data_;
     size_t size_, capacity_;
@@ -251,7 +249,12 @@ void topit::Vector< T >::reallocate(size_t capacity)
 {
   T* data = new T[capacity];
   for (size_t i = 0; i < size_; i++) {
-    data[i] = std::move(data_[i]);
+    try {
+      data[i] = data_[i];
+    } catch (...) {
+      delete[] data;
+      throw;
+    }
   }
   delete[] data_;
   data_ = data;
@@ -265,7 +268,7 @@ void topit::Vector< T >::pushBack(const T& v)
     size_t new_capacity = capacity_ == 0 ? 1 : capacity_ * 2;
     reallocate(new_capacity);
   }
-  data_[size_] = std::move(v);
+  data_[size_] = v;
   ++size_;
 }
 
@@ -371,14 +374,14 @@ T& topit::Iterator< T >::operator[](std::ptrdiff_t n) const
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator++(int)
+topit::Iterator< T >& topit::Iterator< T >::operator++()
 {
   ++ptr_;
   return *this;
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator++()
+topit::Iterator< T >& topit::Iterator< T >::operator++(int)
 {
   Iterator< T > temp = *this;
   ++(*this);
@@ -401,13 +404,13 @@ topit::Iterator< T >& topit::Iterator< T >::operator--()
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator+(std::ptrdiff_t n)
+topit::Iterator< T > topit::Iterator< T >::operator+(std::ptrdiff_t n)
 {
   return Iterator< T >{ptr_ + n};
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator-(std::ptrdiff_t n)
+topit::Iterator< T > topit::Iterator< T >::operator-(std::ptrdiff_t n)
 {
   return Iterator< T >{ptr_ - n};
 }
@@ -509,14 +512,14 @@ const T& topit::CIterator< T >::operator[](std::ptrdiff_t n) const
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator++(int)
+topit::CIterator< T >& topit::CIterator< T >::operator++()
 {
   ++ptr_;
   return *this;
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator++()
+topit::CIterator< T >& topit::CIterator< T >::operator++(int)
 {
   CIterator< T > temp = *this;
   ++(*this);
@@ -539,13 +542,13 @@ topit::CIterator< T >& topit::CIterator< T >::operator--()
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator+(std::ptrdiff_t n)
+topit::CIterator< T > topit::CIterator< T >::operator+(std::ptrdiff_t n)
 {
   return CIterator< T >{ptr_ + n};
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator-(std::ptrdiff_t n)
+topit::CIterator< T > topit::CIterator< T >::operator-(std::ptrdiff_t n)
 {
   return CIterator< T >{ptr_ - n};
 }
