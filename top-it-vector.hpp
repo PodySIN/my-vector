@@ -1,6 +1,7 @@
 #ifndef TOP_IT_VECTOR_HPP
 #define TOP_IT_VECTOR_HPP
 #include <cstddef>
+#include <initializer_list>
 
 namespace topit {
   template< class T > class Vector;
@@ -75,6 +76,7 @@ namespace topit {
     Vector(const Vector< T >&);
     Vector(size_t size, const T& init);
     Vector(size_t size, const T* arr);
+    explicit Vector(std::initializer_list< T >);
     Vector(Vector< T >&&) noexcept;
     Vector< T >& operator=(const Vector< T >&);
     Vector< T >& operator=(Vector< T >&&);
@@ -90,23 +92,57 @@ namespace topit {
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
-
+    
+    void shrinkToFit();
+    void reserve(size_t);
     void swap(Vector< T >& rhs) noexcept;
     void pushBack(const T& v);
+    void pushBackCount(size_t k, const T& val);
+
+    template< class IT >
+    void pushBackRange(IT b, size_t k);
+
     void popBack();
     void insert(size_t pos, const T* v);
+    void insert(size_t i, const Vector< T >& rhs, size_t start, size_t end);
     void erase(size_t pos);
+    void erase(size_t start, size_t end);
     T& at(size_t index);
     const T& at(size_t index) const;
   private:
     void reallocate(size_t capacity);
     explicit Vector(size_t size);
+    void unsafePushBack(const T& val);
     T* data_;
     size_t size_, capacity_;
   };
 
   template< class T >
   bool operator==(const Vector< T >& lhs, const Vector< T >& rhs);
+}
+
+template< class T >
+topit::Vector< T >::Vector(std::initializer_list< T > il):
+  Vector(il.size())
+{
+  size_t i = 0;
+  for (auto it = il.begin(); it != il.end(); it++) {
+    data_[i++] = *it;
+  }
+}
+
+template< class T >
+void topit::Vector< T >::reserve(size_t k)
+{
+  data_ = new T[k];
+  size_ = k;
+  capacity_ = k;
+}
+
+template< class T >
+void topit::Vector< T >::shrinkToFit()
+{
+  reallocate(size_);
 }
 
 template< class T >
@@ -270,6 +306,38 @@ void topit::Vector< T >::pushBack(const T& v)
   }
   data_[size_] = v;
   ++size_;
+}
+
+template< class T >
+void topit::Vector< T >::unsafePushBack(const T& v)
+{
+  data_[size_] = v;
+  size_++;
+}
+
+template< class T >
+void topit::Vector< T >::pushBackCount(size_t k, const T& val)
+{
+  if (size_ + k >= capacity_) {
+    size_t new_capacity = size_ + k;
+    reallocate(new_capacity);
+  }
+  for (size_t i = size_; i < size_ + k; i++) {
+    unsafePushBack(val);
+  }
+}
+
+template< class T, class IT >
+void topit::Vector< T >::pushBackRange(IT b, size_t k)
+{
+  if (size_ + k >= capacity_) {
+    size_t new_capacity = size_ + k;
+    reallocate(new_capacity);
+  }
+  for (size_t i = 0; i < k; i++) {
+    unsafePushBack(*b);
+    b++;
+  }
 }
 
 template< class T >

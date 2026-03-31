@@ -175,6 +175,12 @@ bool testMoveOperatorForNonEmpty()
   return v2[0] == 1 && v2[1] == 2;
 }
 
+bool testInitializerList()
+{
+  topit::Vector< int > v{1, 2, 3};
+  return v.getSize() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
+}
+
 int main()
 {
   using test_t = std::pair< const char*, bool(*)() >;
@@ -195,7 +201,8 @@ int main()
     { "Test copy operator for empty", testCopyOperatorForEmpty },
     { "Test copy operator for not empty", testCopyOperatorForNonEmpty },
     { "Test move operator for empty", testMoveOperatorForEmpty },
-    { "Test move operator for non empty", testMoveOperatorForNonEmpty }
+    { "Test move operator for non empty", testMoveOperatorForNonEmpty },
+    { "Test constructor for non-empty initializer list", testInitializerList }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
