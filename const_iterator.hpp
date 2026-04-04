@@ -9,6 +9,7 @@ namespace topit {
   class CIterator {
   public:
     CIterator();
+    CIterator(T* ptr);
     CIterator(const CIterator< T >&);
     CIterator(CIterator< T >&&) noexcept;
     CIterator< T >& operator=(const CIterator< T >&);
@@ -40,6 +41,11 @@ namespace topit {
 template< class T >
 topit::CIterator< T >::CIterator():
   ptr_(nullptr)
+{}
+
+template< class T >
+topit::CIterator< T >::CIterator(T* ptr):
+  ptr_(ptr)
 {}
 
 template< class T >

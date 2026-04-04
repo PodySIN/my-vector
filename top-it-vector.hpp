@@ -43,9 +43,13 @@ namespace topit {
 
     void insert(size_t pos, const T& v);
     void insert(size_t i, const Vector< T >& rhs, size_t start, size_t end);
+    Iterator< T > insert(Iterator< T > pos, const T& val);
+    Iterator< T > insert(Iterator< T > pos, Iterator< T > first, Iterator< T > last);
 
     void erase(size_t pos);
     void erase(size_t start, size_t end);
+    Iterator< T > erase(Iterator< T > pos);
+    Iterator< T > erase(Iterator< T > first, Iterator< T > last);
 
     Iterator< T > begin();
     Iterator< T > end();
@@ -177,7 +181,7 @@ void topit::Vector< T >::insert(size_t pos, const Vector< T >& rhs, size_t start
     throw std::out_of_range("Insert error: invalid range in rhs");
   }
   size_t count = end - start;
-  Vector<T> cpy(*this);
+  Vector< T > cpy(*this);
   if (cpy.size_ + count > cpy.capacity_) {
     cpy.reserve(cpy.size_ + count);
   }
@@ -192,15 +196,94 @@ void topit::Vector< T >::insert(size_t pos, const Vector< T >& rhs, size_t start
 }
 
 template< class T >
+topit::Iterator< T > topit::Vector< T >::insert(Iterator< T > pos, const T& val)
+{
+  size_t index = pos - begin();
+  insert(index, val);
+  return begin() + index;
+}
+
+template< class T >
+topit::Iterator< T > topit::Vector< T >::insert(Iterator< T > pos, Iterator< T > first, Iterator< T > last)
+{
+  size_t index = pos - begin();
+  size_t count = last - first;
+  
+  if (count == 0) {
+    return begin() + index;
+  }
+  
+  Vector< T > cpy(*this);
+  
+  if (cpy.size_ + count > cpy.capacity_) {
+    cpy.reserve(cpy.size_ + count);
+  }
+  
+  for (size_t i = cpy.size_; i > index; --i) {
+    cpy.data_[i + count - 1] = std::move(cpy.data_[i - 1]);
+  }
+  
+  for (size_t i = 0; i < count; ++i) {
+    cpy.data_[index + i] = *(first + i);
+  }
+  
+  cpy.size_ += count;
+  swap(cpy);
+  
+  return begin() + index;
+}
+
+template< class T >
+topit::Iterator< T > topit::Vector< T >::erase(Iterator< T > pos)
+{
+  size_t index = pos - begin();
+  erase(index);
+  return begin() + index;
+}
+
+template< class T >
+topit::Iterator< T > topit::Vector< T >::erase(Iterator< T > first, Iterator< T > last)
+{
+  size_t start = first - begin();
+  size_t end = last - begin();
+  erase(start, end);
+  return begin() + start;
+}
+
+template< class T >
 void topit::Vector< T >::erase(size_t pos)
 {
-  return;
+  if (pos >= size_) {
+    throw std::out_of_range("Erase error: position >= size");
+  }
+  Vector< T > cpy(*this);
+  for (size_t i = pos; i < cpy.size_ - 1; ++i) {
+    cpy.data_[i] = std::move(cpy.data_[i + 1]);
+  }
+  cpy.data_[cpy.size_ - 1].~T();
+  --cpy.size_;
+  swap(cpy);
 }
 
 template< class T >
 void topit::Vector< T >::erase(size_t start, size_t end)
 {
-  return;
+  if (start > size_ || end > size_ || start > end) {
+    throw std::out_of_range("Erase error: invalid range");
+  }
+  size_t count = end - start;
+  if (count == 0) {
+    return;
+  }
+  Vector< T > cpy(*this);
+  for (size_t i = end; i < cpy.size_; ++i) {
+    cpy.data_[i - count] = std::move(cpy.data_[i]);
+  }
+  for (size_t i = 0; i < count; ++i) {
+    cpy.data_[cpy.size_ - 1 - i].~T();
+  }
+  cpy.size_ -= count;
+  swap(cpy);
 }
 
 template< class T >
@@ -338,7 +421,7 @@ void topit::Vector< T >::pushBackCount(size_t k, const T& val)
     cpy.reserve(size_ + k);
   }
   for (size_t i = size_; i < size_ + k; i++) {
-    unsafePushBack(val);
+    cpy.unsafePushBack(val);
   }
   swap(cpy);
 }
@@ -352,7 +435,7 @@ void topit::Vector< T >::pushBackRange(IT b, size_t k)
     cpy.reserve(capacity_ + k);
   }
   for (size_t i = 0; i < k; i++) {
-    unsafePushBack(*b);
+    cpy.unsafePushBack(*b);
     b++;
   }
   swap(cpy);

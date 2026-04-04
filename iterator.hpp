@@ -9,6 +9,7 @@ namespace topit {
   class Iterator {
   public:
     Iterator();
+    Iterator(T* ptr);
     Iterator(const Iterator< T >&);
     Iterator(Iterator< T >&&) noexcept;
     Iterator< T >& operator=(const Iterator< T >&);
@@ -40,6 +41,11 @@ namespace topit {
 template< class T >
 topit::Iterator< T >::Iterator():
   ptr_(nullptr)
+{}
+
+template< class T >
+topit::Iterator< T >::Iterator(T* ptr):
+  ptr_(ptr)
 {}
 
 template< class T >
