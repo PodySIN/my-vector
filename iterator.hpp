@@ -21,8 +21,8 @@ namespace topit {
     Iterator< T > operator++(int);
     Iterator< T >& operator--();
     Iterator< T > operator--(int);
-    Iterator< T > operator+(std::ptrdiff_t n);
-    Iterator< T > operator-(std::ptrdiff_t n);
+    Iterator< T > operator+(std::ptrdiff_t n) const;
+    Iterator< T > operator-(std::ptrdiff_t n) const;
     std::ptrdiff_t operator-(const Iterator< T >&) const;
 
     bool operator==(const Iterator< T >&) const noexcept;
@@ -122,13 +122,13 @@ topit::Iterator< T > topit::Iterator< T >::operator--(int)
 }
 
 template< class T >
-topit::Iterator< T > topit::Iterator< T >::operator+(std::ptrdiff_t n)
+topit::Iterator< T > topit::Iterator< T >::operator+(std::ptrdiff_t n) const
 {
   return Iterator< T >{ptr_ + n};
 }
 
 template< class T >
-topit::Iterator< T > topit::Iterator< T >::operator-(std::ptrdiff_t n)
+topit::Iterator< T > topit::Iterator< T >::operator-(std::ptrdiff_t n) const
 {
   return Iterator< T >{ptr_ - n};
 }

@@ -223,6 +223,45 @@ bool testShrinkToFit()
   return v.getCapacity() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
 }
 
+bool testInsertEmptyVector()
+{
+  topit::Vector< int > v;
+  v.insert(0, 1);
+  return v.getSize() == 1 && v[0] == 1;
+}
+
+bool testInsertMiddleOfVector()
+{
+  topit::Vector< int > v{1, 2, 3};
+  v.insert(1, 11);
+  return v.getSize() == 4 && v[0] == 1 && v[1] == 11 && v[2] == 2 && v[3] == 3;
+}
+
+bool testInsertStartOfVector()
+{
+  topit::Vector< int > v{1, 2, 3};
+  v.insert(0, 11);
+  return v.getSize() == 4 && v[0] == 11 && v[1] == 1 && v[2] == 2 && v[3] == 3;
+}
+
+bool testInsertEndOfVector()
+{
+  topit::Vector< int > v{1, 2, 3};
+  v.insert(3, 11);
+  return v.getSize() == 4 && v[0] == 1 && v[1] == 2 && v[2] == 3 && v[3] == 11;
+}
+
+bool testInsertOutOfRangeVector()
+{
+  topit::Vector< int > v{1, 2, 3};
+  try {
+    v.insert(4, 11);
+  } catch (const std::out_of_range& e) {
+    return true;
+  }
+  return false;
+}
+
 int main()
 {
   using test_t = std::pair< const char*, bool(*)() >;
@@ -249,7 +288,12 @@ int main()
     { "Test reserve for empty vector", testReserveEmpty },
     { "Test reserve for non empty vector", testReserveNonEmpty },
     { "Test reserve for capacity smaller than container capacity", testReserveLessCapacity },
-    { "Test shrink to fit", testShrinkToFit }
+    { "Test shrink to fit", testShrinkToFit },
+    { "Test insert empty vector", testInsertEmptyVector },
+    { "Test insert start of vector", testInsertStartOfVector },
+    { "Test insert middle of vector", testInsertMiddleOfVector },
+    { "Test insert end of vector", testInsertEndOfVector },
+    { "Test insert out of range vector", testInsertOutOfRangeVector }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;

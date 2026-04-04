@@ -21,8 +21,8 @@ namespace topit {
     CIterator< T > operator++(int);
     CIterator< T >& operator--();
     CIterator< T > operator--(int);
-    CIterator< T > operator+(std::ptrdiff_t n);
-    CIterator< T > operator-(std::ptrdiff_t n);
+    CIterator< T > operator+(std::ptrdiff_t n) const;
+    CIterator< T > operator-(std::ptrdiff_t n) const;
     std::ptrdiff_t operator-(const CIterator< T >&) const;
 
     bool operator==(const CIterator< T >&) const noexcept;
@@ -33,7 +33,7 @@ namespace topit {
     bool operator>=(const CIterator< T >&) const noexcept;
   private:
     friend class Vector< T >;
-    T* ptr_;
+    const T* ptr_;
   };
 }
 
@@ -122,13 +122,13 @@ topit::CIterator< T > topit::CIterator< T >::operator--(int)
 }
 
 template< class T >
-topit::CIterator< T > topit::CIterator< T >::operator+(std::ptrdiff_t n)
+topit::CIterator< T > topit::CIterator< T >::operator+(std::ptrdiff_t n) const
 {
   return CIterator< T >{ptr_ + n};
 }
 
 template< class T >
-topit::CIterator< T > topit::CIterator< T >::operator-(std::ptrdiff_t n)
+topit::CIterator< T > topit::CIterator< T >::operator-(std::ptrdiff_t n) const
 {
   return CIterator< T >{ptr_ - n};
 }

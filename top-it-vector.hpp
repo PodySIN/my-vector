@@ -17,17 +17,15 @@ namespace topit {
     Vector(size_t size, const T* arr);
     explicit Vector(std::initializer_list< T >);
     Vector(Vector< T >&&) noexcept;
+
     Vector< T >& operator=(const Vector< T >&);
     Vector< T >& operator=(Vector< T >&&);
-
     T& operator[](size_t index) noexcept;
     const T& operator[](size_t index) const noexcept;
-    
-    Iterator< T > begin() const;
-    CIterator< T > cbegin() const;
-    Iterator< T > end() const;
-    CIterator< T > cend() const;
-    
+
+    T& at(size_t index);
+    const T& at(size_t index) const;
+
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
@@ -35,19 +33,26 @@ namespace topit {
     void shrinkToFit();
     void reserve(size_t);
     void swap(Vector< T >& rhs) noexcept;
+
     void pushBack(const T& v);
     void pushBackCount(size_t k, const T& val);
-
     template< class IT >
     void pushBackRange(IT b, size_t k);
 
     void popBack();
-    void insert(size_t pos, const T* v);
+
+    void insert(size_t pos, const T& v);
     void insert(size_t i, const Vector< T >& rhs, size_t start, size_t end);
+
     void erase(size_t pos);
     void erase(size_t start, size_t end);
-    T& at(size_t index);
-    const T& at(size_t index) const;
+
+    Iterator< T > begin();
+    Iterator< T > end();
+    Iterator< T > begin() const;
+    Iterator< T > end() const;
+    CIterator< T > cbegin() const;
+    CIterator< T > cend() const;
   private:
     explicit Vector(size_t size);
     void unsafePushBack(const T& val);
@@ -145,6 +150,42 @@ topit::Vector< T >::~Vector()
 }
 
 template< class T >
+void topit::Vector< T >::insert(size_t pos, const T& v)
+{
+  if (pos > size_) {
+    throw std::out_of_range("Insert error! Position > size_!");
+  }
+  Vector< T > cpy{*this};
+  if (cpy.size_ + 1 > cpy.capacity_) {
+    cpy.reserve(cpy.capacity_ == 0 ? 1 : cpy.capacity_ * 2);
+  }
+  for (size_t i = cpy.size_; i > pos; --i) {
+    cpy.data_[i] = cpy.data_[i - 1];
+  }
+  cpy.data_[pos] = v;
+  ++cpy.size_;
+  swap(cpy);
+}
+
+template< class T >
+void topit::Vector< T >::insert(size_t i, const Vector< T >& rhs, size_t start, size_t end)
+{
+  return;
+}
+
+template< class T >
+void topit::Vector< T >::erase(size_t pos)
+{
+  return;
+}
+
+template< class T >
+void topit::Vector< T >::erase(size_t start, size_t end)
+{
+  return;
+}
+
+template< class T >
 topit::Vector< T >::Vector():
   data_(nullptr),
   size_(0),
@@ -197,6 +238,18 @@ topit::Vector< T >& topit::Vector< T >::operator=(Vector< T >&& rhs)
 }
 
 template< class T >
+topit::Iterator< T > topit::Vector< T >::begin()
+{
+  return Iterator< T >{data_};
+}
+
+template< class T >
+topit::Iterator< T > topit::Vector< T >::end()
+{
+  return Iterator< T >{data_ + size_};
+}
+
+template< class T >
 topit::Iterator< T > topit::Vector< T >::begin() const
 {
   return Iterator< T >{data_};
@@ -242,11 +295,14 @@ template< class T >
 void topit::Vector< T >::pushBack(const T& v)
 {
   if (size_ >= capacity_) {
+    Vector< T > cpy(*this);
     size_t new_capacity = capacity_ == 0 ? 1 : capacity_ * 2;
-    reserve(new_capacity);
+    cpy.reserve(new_capacity);
+    cpy.unsafePushBack(v);
+    swap(cpy);
+  } else {
+    unsafePushBack(v);
   }
-  data_[size_] = v;
-  ++size_;
 }
 
 template< class T >
@@ -259,27 +315,29 @@ void topit::Vector< T >::unsafePushBack(const T& v)
 template< class T >
 void topit::Vector< T >::pushBackCount(size_t k, const T& val)
 {
+  Vector< T > cpy(*this);
   if (size_ + k >= capacity_) {
-    size_t new_capacity = size_ + k;
-    reserve(new_capacity);
+    cpy.reserve(size_ + k);
   }
   for (size_t i = size_; i < size_ + k; i++) {
     unsafePushBack(val);
   }
+  swap(cpy);
 }
 
 template< class T >
 template< class IT >
 void topit::Vector< T >::pushBackRange(IT b, size_t k)
 {
+  Vector< T > cpy{*this};
   if (size_ + k >= capacity_) {
-    size_t new_capacity = size_ + k;
-    reserve(new_capacity);
+    cpy.reserve(capacity_ + k);
   }
   for (size_t i = 0; i < k; i++) {
     unsafePushBack(*b);
     b++;
   }
+  swap(cpy);
 }
 
 template< class T >
