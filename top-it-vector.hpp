@@ -2,6 +2,7 @@
 #define TOP_IT_VECTOR_HPP
 #include <cstddef>
 #include <initializer_list>
+#include <stdexcept>
 
 namespace topit {
   template< class T > class Vector;
@@ -18,10 +19,10 @@ namespace topit {
     T& operator*() const;
     T* operator->() const;
     T& operator[](std::ptrdiff_t n) const;
-    Iterator< T >& operator++(int);
     Iterator< T >& operator++();
-    Iterator< T >& operator--(int);
+    Iterator< T > operator++(int);
     Iterator< T >& operator--();
+    Iterator< T > operator--(int);
     Iterator< T > operator+(std::ptrdiff_t n);
     Iterator< T > operator-(std::ptrdiff_t n);
     std::ptrdiff_t operator-(const Iterator< T >&) const;
@@ -49,10 +50,10 @@ namespace topit {
     const T& operator*() const;
     const T* operator->() const;
     const T& operator[](std::ptrdiff_t n) const;
-    CIterator< T >& operator++(int);
     CIterator< T >& operator++();
-    CIterator< T >& operator--(int);
+    CIterator< T > operator++(int);
     CIterator< T >& operator--();
+    CIterator< T > operator--(int);
     CIterator< T > operator+(std::ptrdiff_t n);
     CIterator< T > operator-(std::ptrdiff_t n);
     std::ptrdiff_t operator-(const CIterator< T >&) const;
@@ -110,7 +111,6 @@ namespace topit {
     T& at(size_t index);
     const T& at(size_t index) const;
   private:
-    void reallocate(size_t capacity);
     explicit Vector(size_t size);
     void unsafePushBack(const T& val);
     T* data_;
@@ -134,15 +134,32 @@ topit::Vector< T >::Vector(std::initializer_list< T > il):
 template< class T >
 void topit::Vector< T >::reserve(size_t k)
 {
-  data_ = new T[k];
-  size_ = k;
+  if (k == capacity_) {
+    return;
+  }
+  size_t new_size = size_;
+  if (size_ > k) {
+    new_size = k;
+  }
+  T* new_data = new T[k];
+  for (size_t i = 0; i < new_size; i++) {
+    try {
+      new_data[i] = data_[i];
+    } catch (...) {
+      delete[] new_data;
+      throw;
+    }
+  }
+  delete[] data_;
+  data_ = new_data;
+  size_ = new_size;
   capacity_ = k;
 }
 
 template< class T >
 void topit::Vector< T >::shrinkToFit()
 {
-  reallocate(size_);
+  reserve(size_);
 }
 
 template< class T >
@@ -183,6 +200,9 @@ topit::Vector< T >::Vector(size_t size, const T& init):
 template< class T >
 topit::Vector< T >::~Vector()
 {
+  for (size_t i = 0; i < size_; i++) {
+    data_[i].~T();
+  }
   delete[] data_;
 }
 
@@ -281,28 +301,11 @@ size_t topit::Vector< T >::getCapacity() const noexcept
 }
 
 template< class T >
-void topit::Vector< T >::reallocate(size_t capacity)
-{
-  T* data = new T[capacity];
-  for (size_t i = 0; i < size_; i++) {
-    try {
-      data[i] = data_[i];
-    } catch (...) {
-      delete[] data;
-      throw;
-    }
-  }
-  delete[] data_;
-  data_ = data;
-  capacity_ = capacity;
-}
-
-template< class T >
 void topit::Vector< T >::pushBack(const T& v)
 {
   if (size_ >= capacity_) {
     size_t new_capacity = capacity_ == 0 ? 1 : capacity_ * 2;
-    reallocate(new_capacity);
+    reserve(new_capacity);
   }
   data_[size_] = v;
   ++size_;
@@ -320,19 +323,20 @@ void topit::Vector< T >::pushBackCount(size_t k, const T& val)
 {
   if (size_ + k >= capacity_) {
     size_t new_capacity = size_ + k;
-    reallocate(new_capacity);
+    reserve(new_capacity);
   }
   for (size_t i = size_; i < size_ + k; i++) {
     unsafePushBack(val);
   }
 }
 
-template< class T, class IT >
+template< class T >
+template< class IT >
 void topit::Vector< T >::pushBackRange(IT b, size_t k)
 {
   if (size_ + k >= capacity_) {
     size_t new_capacity = size_ + k;
-    reallocate(new_capacity);
+    reserve(new_capacity);
   }
   for (size_t i = 0; i < k; i++) {
     unsafePushBack(*b);
@@ -343,7 +347,7 @@ void topit::Vector< T >::pushBackRange(IT b, size_t k)
 template< class T >
 void topit::Vector< T >::popBack()
 {
-  if(size_ > 0) {
+  if (size_ > 0) {
     size_--;
     data_[size_].~T();
   }
@@ -449,7 +453,7 @@ topit::Iterator< T >& topit::Iterator< T >::operator++()
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator++(int)
+topit::Iterator< T > topit::Iterator< T >::operator++(int)
 {
   Iterator< T > temp = *this;
   ++(*this);
@@ -457,14 +461,14 @@ topit::Iterator< T >& topit::Iterator< T >::operator++(int)
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator--(int)
+topit::Iterator< T >& topit::Iterator< T >::operator--()
 {
   --ptr_;
   return *this;
 }
 
 template< class T >
-topit::Iterator< T >& topit::Iterator< T >::operator--()
+topit::Iterator< T > topit::Iterator< T >::operator--(int)
 {
   Iterator< T > temp = *this;
   --(*this);
@@ -587,7 +591,7 @@ topit::CIterator< T >& topit::CIterator< T >::operator++()
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator++(int)
+topit::CIterator< T > topit::CIterator< T >::operator++(int)
 {
   CIterator< T > temp = *this;
   ++(*this);
@@ -595,14 +599,14 @@ topit::CIterator< T >& topit::CIterator< T >::operator++(int)
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator--(int)
+topit::CIterator< T >& topit::CIterator< T >::operator--()
 {
   --ptr_;
   return *this;
 }
 
 template< class T >
-topit::CIterator< T >& topit::CIterator< T >::operator--()
+topit::CIterator< T > topit::CIterator< T >::operator--(int)
 {
   CIterator< T > temp = *this;
   --(*this);

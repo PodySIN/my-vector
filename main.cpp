@@ -107,6 +107,18 @@ bool testEqual()
   return l == r;
 }
 
+bool testConstrucctorWithSizeAndInit()
+{
+  topit::Vector< int > v(3, 4);
+  bool f = true;
+  for (size_t i = 0; i < 3; i++) {
+    if (v[i] != 4) {
+      f = false;
+    }
+  }
+  return v.getSize() == 3 && f;
+}
+
 bool testCopyConstructorForEmpty()
 {
   topit::Vector< int > v;
@@ -177,8 +189,38 @@ bool testMoveOperatorForNonEmpty()
 
 bool testInitializerList()
 {
+  topit::Vector< int > v{6, 7};
+  return v.getSize() == 2 && v[0] == 6 && v[1] == 7;
+}
+
+bool testReserveEmpty()
+{
+  topit::Vector< int > v;
+  v.reserve(100);
+  return v.getCapacity() == 100 && v.getSize() == 0;
+}
+
+bool testReserveNonEmpty()
+{
+  topit::Vector< int > v{1, 2, 4, 8, 16, 22};
+  v.reserve(1000);
+  return v.getCapacity() == 1000 && v.getSize() == 6 && v[0] == 1 && v[2] == 4 && v[5] == 22;
+}
+
+bool testReserveLessCapacity()
+{
+  topit::Vector< int > v{1, 2, 13, 7, 16, 22};
+  v.reserve(1000);
+  v.reserve(4);
+  return v.getCapacity() == 4 && v.getSize() == 4 && v[0] == 1 && v[2] == 13 && v[3] == 7;
+}
+
+bool testShrinkToFit()
+{
   topit::Vector< int > v{1, 2, 3};
-  return v.getSize() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
+  v.reserve(100);
+  v.shrinkToFit();
+  return v.getCapacity() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
 }
 
 int main()
@@ -194,6 +236,7 @@ int main()
     { "Inbound const access", testElementInboundConstAccess },
     { "Outbound const access", testElementOutboundConstAccess },
     { "Equal of 2 vectors", testEqual },
+    { "Test constructor with size and init", testConstrucctorWithSizeAndInit },
     { "Test copy constructor for empty", testCopyConstructorForEmpty },
     { "Test copy constructor for non empty", testCopyConstructorForNonEmpty },
     { "Test move constructor for empty", testMoveConstructorForEmpty },
@@ -202,7 +245,11 @@ int main()
     { "Test copy operator for not empty", testCopyOperatorForNonEmpty },
     { "Test move operator for empty", testMoveOperatorForEmpty },
     { "Test move operator for non empty", testMoveOperatorForNonEmpty },
-    { "Test constructor for non-empty initializer list", testInitializerList }
+    { "Test constructor for non-empty initializer list", testInitializerList },
+    { "Test reserve for empty vector", testReserveEmpty },
+    { "Test reserve for non empty vector", testReserveNonEmpty },
+    { "Test reserve for capacity smaller than container capacity", testReserveLessCapacity },
+    { "Test shrink to fit", testShrinkToFit }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;
