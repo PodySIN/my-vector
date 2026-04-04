@@ -262,6 +262,14 @@ bool testInsertOutOfRangeVector()
   return false;
 }
 
+bool testInsertAnotherVector()
+{
+  topit::Vector< int > v{1, 2, 3};
+  topit::Vector< int > v2{11, 12, 13};
+  v.insert(1, v2, 0, 3);
+  return v.getSize() == 6 && v[0] == 1 && v[1] == 11 && v[2] == 12 && v[3] == 13 && v[4] == 2 && v[5] == 3;
+}
+
 int main()
 {
   using test_t = std::pair< const char*, bool(*)() >;
@@ -293,7 +301,8 @@ int main()
     { "Test insert start of vector", testInsertStartOfVector },
     { "Test insert middle of vector", testInsertMiddleOfVector },
     { "Test insert end of vector", testInsertEndOfVector },
-    { "Test insert out of range vector", testInsertOutOfRangeVector }
+    { "Test insert out of range vector", testInsertOutOfRangeVector },
+    { "Test insert another vector", testInsertAnotherVector }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   std::cout << std::boolalpha;

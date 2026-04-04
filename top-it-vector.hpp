@@ -153,7 +153,7 @@ template< class T >
 void topit::Vector< T >::insert(size_t pos, const T& v)
 {
   if (pos > size_) {
-    throw std::out_of_range("Insert error! Position > size_!");
+    throw std::out_of_range("Insert error! Insert position > size of vector!");
   }
   Vector< T > cpy{*this};
   if (cpy.size_ + 1 > cpy.capacity_) {
@@ -168,9 +168,27 @@ void topit::Vector< T >::insert(size_t pos, const T& v)
 }
 
 template< class T >
-void topit::Vector< T >::insert(size_t i, const Vector< T >& rhs, size_t start, size_t end)
+void topit::Vector< T >::insert(size_t pos, const Vector< T >& rhs, size_t start, size_t end)
 {
-  return;
+  if (pos > size_) {
+    throw std::out_of_range("Insert error: position > size");
+  }
+  if (start > rhs.size_ || end > rhs.size_ || start > end) {
+    throw std::out_of_range("Insert error: invalid range in rhs");
+  }
+  size_t count = end - start;
+  Vector<T> cpy(*this);
+  if (cpy.size_ + count > cpy.capacity_) {
+    cpy.reserve(cpy.size_ + count);
+  }
+  for (size_t i = cpy.size_; i > pos; --i) {
+    cpy.data_[i + count - 1] = std::move(cpy.data_[i - 1]);
+  }
+  for (size_t i = 0; i < count; ++i) {
+    cpy.data_[pos + i] = rhs.data_[start + i];
+  }
+  cpy.size_ += count;
+  swap(cpy);
 }
 
 template< class T >
